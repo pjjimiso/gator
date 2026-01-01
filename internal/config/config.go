@@ -4,7 +4,6 @@ package config
 import (
 	"os"
 	"encoding/json"
-	"fmt"
 )
 
 
@@ -14,14 +13,23 @@ type Config struct {
 	DbURL string `json:"db_url"`
 }
 
+func getConfigFilePath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil { 
+		return "", err
+	}
+	
+	cfgPath := homeDir + "/" + configFileName
+	return cfgPath, nil
+}
 
 func Read() (Config, error) {
-	homeDir, err := os.UserHomeDir()
+	cfgPath, err := getConfigFilePath()
 	if err != nil { 
 		return Config{}, err
 	}
 
-	data, err := os.ReadFile(homeDir + "/" + configFileName)
+	data, err := os.ReadFile(cfgPath)
 	if err != nil { 
 		return Config{}, err
 	}
@@ -35,3 +43,8 @@ func Read() (Config, error) {
 	return cfg, nil
 }
 
+/*
+func (c Config) SetUser() error {
+	
+}
+*/	
