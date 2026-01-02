@@ -3,6 +3,7 @@ package config
 
 import (
 	"os"
+	"os/user"
 	"encoding/json"
 )
 
@@ -10,7 +11,8 @@ import (
 const configFileName = ".gatorconfig.json"
 
 type Config struct {
-	DbURL string `json:"db_url"`
+	DbURL    string `json:"db_url"`
+	Username string `json:"username"`
 }
 
 func getConfigFilePath() (string, error) {
@@ -43,8 +45,28 @@ func Read() (Config, error) {
 	return cfg, nil
 }
 
-/*
-func (c Config) SetUser() error {
-	
+func write(cfg Config) error {
+	cfgPath, err := getConfigFilePath()
+	if err != nil { 
+		return err
+	}
+
+	b, err := json.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(cfgPath, b, 0600)
+	return nil
 }
-*/	
+
+func (c Config) SetUser() error {
+	user, err := user.Current()
+	if err != nil { 
+		return err
+	}
+
+	c.Username = user.Username
+	write(c)
+	return nil
+}
