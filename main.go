@@ -4,23 +4,26 @@ package main
 import (
 	"os"
 	"log"
+	"database/sql"
 
+	_ "github.com/lib/pq"
 	"github.com/pjjimiso/gator/internal/config"
+	"github.com/pjjimiso/gator/internal/database"
 )
 
 type state struct {
-	cfg *config.Config
+	cfg		*config.Config
+	dbQueries	*database.Queries
 }
-
-type command struct { 
-	name string
-	args []string
-}
-
 
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("You must provide a command argument")
+		os.Exit(1)
+	}
+	if os.Args[1] == "" {
+		log.Fatal("Command cannot be empty")
+		os.Exit(1)
 	}
 
 	configFile, err := config.Read()
@@ -28,24 +31,25 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s := state{ cfg: &configFile }
+	programState := &state{ cfg: &configFile }
+	db, err := sql.Open("postgres", programState.cfg.DbURL)
+	programState.dbQueries = database.New(db)
 
-	commandName := os.Args[1]
-	commandArgs := os.Args[2:]
-
-	cmd := command {
-		name: commandName,
-		args: commandArgs,
+	cmds := commands{
+		registeredCommands: make(map[string]func(*state, command) error),
 	}
 
-	c := commands{
-		cmdMap: make(map[string]func(*state, command) error),
-	}
+	cmds.register("register", handlerRegister)
+	cmds.register("login", handlerLogin)
 
-	c.register("login", handlerLogin)
+	cmdName := os.Args[1]
+	cmdArgs := os.Args[2:]
 
-	err = c.run(&s, cmd)
-	if err != nil {
+	err = cmds.run(programState, command{
+		name: cmdName,
+		args: cmdArgs,
+	})
+	if err != nil { 
 		log.Fatal(err)
 	}
 }

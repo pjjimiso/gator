@@ -72,3 +72,21 @@ gator=# \dt
 (2 rows)
 ```
 
+# App Usage
+
+## Commands
+These are the supported commands: 
+
+### Register
+Registers the user by adding them to the users table and setting their username in `~/.gatorconfig.json`.
+```
+go run . register newuser
+```
+
+### Login
+Sets the user in `~/.gatorconfig.json`. The user must already be registered for this command to work.
+```
+go run . login newuser
+```
+
+

@@ -1,24 +1,31 @@
 package main
 
-import "fmt"
+import (
+	"github.com/pkg/errors"
+)
+
+type command struct { 
+	name string
+	args []string
+}
 
 type commands struct {
-	cmdMap map[string]func(*state, command) error
+	registeredCommands map[string]func(*state, command) error
 }
 
 func (c *commands) run(s *state, cmd command) error {
-	command, ok := c.cmdMap[cmd.name]
+	registeredCommand, ok := c.registeredCommands[cmd.name]
 	if !ok {
-		return fmt.Errorf("That command does not exist")
+		return errors.New("That command does not exist")
 	}
 
-	err := command(s, cmd)
+	err := registeredCommand(s, cmd)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "command failed")
 	}
 	return nil
 }
 
 func(c *commands) register(name string, f func(*state, command) error) {
-	c.cmdMap[name] = f
+	c.registeredCommands[name] = f
 }
