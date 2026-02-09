@@ -50,8 +50,14 @@ CREATE TABLE users(
 DROP TABLE users;
 ```
 
-### Run up migration using psql connection string
-This will create the users table
+### Test psql connection string
+Replace the user:password with your own
+```
+psql "postgres://postgres:postgres@localhost:5432/gator"
+```
+
+### Run up-migration to create the users table
+Replace the connection string with your own
 ```
 goose postgres "postgres://postgres:postgres@localhost:5432/gator" up
 ```
