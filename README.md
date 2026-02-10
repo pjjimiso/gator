@@ -89,4 +89,3 @@ Sets the user in `~/.gatorconfig.json`. The user must already be registered for 
 go run . login newuser
 ```
 
-

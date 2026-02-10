@@ -63,3 +63,4 @@ func (cfg *Config) SetUser(userName string) error {
 	cfg.Username = userName
 	return write(*cfg)
 }
+
