@@ -2,10 +2,6 @@ package main
 
 import ( 
 	"context"
-	"net/http"
-	"encoding/xml"
-	"time"
-	"io"
 	"fmt"
 	"html"
 
@@ -41,50 +37,13 @@ func handlerAgg(s *state, cmd command) error {
 
 	feed.Channel.Title = fmt.Sprintf(html.UnescapeString(feed.Channel.Title))
 	feed.Channel.Description = fmt.Sprintf(html.UnescapeString(feed.Channel.Description))
-
-	fmt.Printf("Feed results:\n\n")
-
-	fmt.Printf("Title: %s\n", feed.Channel.Title)
-	fmt.Printf("Description: %s\n", feed.Channel.Description)
-	for i, item := range feed.Channel.Item { 
-		feed.Channel.Item[i].Title = fmt.Sprintf(html.UnescapeString(item.Title))
-		feed.Channel.Item[i].Description = fmt.Sprintf(html.UnescapeString(item.Description))
-		fmt.Printf("\tTitle: %s\n", feed.Channel.Item[i].Title)
-		fmt.Printf("\tLink: %s\n", feed.Channel.Item[i].Link)
-		fmt.Printf("\tDescription: %s\n", feed.Channel.Item[i].Description)
-		fmt.Printf("\tPubDate: %s\n", feed.Channel.Item[i].PubDate)
-		fmt.Println()
+	for i, item := range feed.Channel.Item {
+		item.Title = fmt.Sprintf(html.UnescapeString(item.Title))
+		item.Description = fmt.Sprintf(html.UnescapeString(item.Description))
+		feed.Channel.Item[i] = item
 	}
+
+	printFeed(feed)
 
 	return nil
-}
-
-func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
-	client := &http.Client{
-		Timeout: 10* time.Second,
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "GET", feedURL, nil)
-	if err != nil {
-		return &RSSFeed{}, errors.Wrap(err, "Failed to create HTTP request")
-	}
-	req.Header.Set("User-Agent", "gator")
-	
-	res, err := client.Do(req)
-	if err != nil { 
-		return &RSSFeed{}, errors.Wrap(err, "Failed to get HTTP response")
-	}
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil { 
-		return &RSSFeed{}, errors.Wrap(err, "Failed to read HTTP response body")
-	}
-
-	var feed *RSSFeed
-	err = xml.Unmarshal(data, &feed)
-	if err != nil { 
-		return &RSSFeed{}, errors.Wrap(err, "Failed to unmarshal XML data")
-	}
-
-	return feed, nil
 }

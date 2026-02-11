@@ -19,7 +19,7 @@ func handlerUsers(s *state, cmd command) error {
 
 	for _, user := range users {
 		line := fmt.Sprintf(" * %s ", user)
-		if user == s.cfg.Username { 
+		if user == s.cfg.CurrentUserName { 
 			line += "(current)"
 		}
 		line += "\n"

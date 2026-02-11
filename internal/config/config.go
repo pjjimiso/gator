@@ -10,8 +10,8 @@ import (
 const configFileName = ".gatorconfig.json"
 
 type Config struct {
-	DbURL    string `json:"db_url"`
-	Username string `json:"username"`
+	DbURL		string `json:"db_url"`
+	CurrentUserName string `json:"current_user_name"`
 }
 
 func getConfigFilePath() (string, error) {
@@ -60,7 +60,7 @@ func write(cfg Config) error {
 }
 
 func (cfg *Config) SetUser(userName string) error {
-	cfg.Username = userName
+	cfg.CurrentUserName = userName
 	return write(*cfg)
 }
 
