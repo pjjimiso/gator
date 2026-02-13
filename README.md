@@ -77,15 +77,30 @@ gator=# \dt
 ## Commands
 These are the supported commands: 
 
-### Register
+### register
 Registers the user by adding them to the users table and setting their username in `~/.gatorconfig.json`.
 ```
 go run . register newuser
 ```
 
-### Login
+### login
 Sets the user in `~/.gatorconfig.json`. The user must already be registered for this command to work.
 ```
 go run . login newuser
+```
+
+### addfeed
+Takes a feed url and name and assigns the feed to the currently logged in user.
+```
+go run . addfeed "Hacker News RSS" "https://hnrss.org/newest"
+```
+
+### agg
+TODO
+
+### feeds
+Lists all of the stored feeds
+```
+go run . feeds
 ```
 
