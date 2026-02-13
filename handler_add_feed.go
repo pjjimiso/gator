@@ -18,7 +18,7 @@ func handlerAddFeed(s *state, cmd command) error {
 
 	feedName := cmd.args[0]
 	feedURL := cmd.args[1]
-	currentUser, err := s.dbQueries.GetUser(context.Background(), s.cfg.CurrentUserName)
+	user, err := s.dbQueries.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get user")
 	}
@@ -29,10 +29,21 @@ func handlerAddFeed(s *state, cmd command) error {
 		UpdatedAt:	time.Now(),
 		Name:		feedName,
 		Url:		feedURL,
-		UserID:		currentUser.ID,
+		UserID:		user.ID,
 	})
 	if err != nil {
 		return errors.Wrap(err, "Failed to create feed")
+	}
+
+	_, err = s.dbQueries.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:		uuid.New(),
+		CreatedAt:	time.Now(),
+		UpdatedAt:	time.Now(),
+		UserID:		user.ID,
+		FeedID:		feed.ID,
+	})
+	if err != nil {
+		return errors.Wrap(err, "Failed to follow feed")
 	}
 
 	printFeedDB(feed)
