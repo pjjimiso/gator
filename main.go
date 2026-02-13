@@ -44,7 +44,8 @@ func main() {
 	cmds.register("reset", handlerReset)
 	cmds.register("users", handlerUsers)
 	cmds.register("agg", handlerAgg)
-	cmds.register("addfeed", handlerFeed)
+	cmds.register("addfeed", handlerAddFeed)
+	cmds.register("feeds", handlerFeeds)
 
 	cmdName := os.Args[1]
 	cmdArgs := os.Args[2:]
