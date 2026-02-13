@@ -104,3 +104,15 @@ Lists all of the stored feeds
 go run . feeds
 ```
 
+### follow
+Accepts a feed name and url and adds it to your followed list
+```
+go run . follow "Hacker News RSS" "https://hnrss.org/newest"
+```
+
+### following
+Lists all of the feeds that you currently follow
+```
+go run . following
+```
+
