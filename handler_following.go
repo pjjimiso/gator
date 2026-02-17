@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	"github.com/pjjimiso/gator/internal/database"
 )
 
-func handlerFollowing(s *state, cmd command) error {
-	feeds, err := s.dbQueries.GetFollowedFeeds(context.Background(), s.cfg.CurrentUserName)
+func handlerFollowing(s *state, cmd command, user database.User) error {
+	feeds, err := s.dbQueries.GetFollowedFeeds(context.Background(), user.Name)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get followed feeds")
 	}

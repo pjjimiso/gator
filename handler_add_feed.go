@@ -11,17 +11,13 @@ import (
 )
 
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 2 {
 		return errors.New("Addfeed expects 2 arguments: feedName and feedURL")
 	}
 
 	feedName := cmd.args[0]
 	feedURL := cmd.args[1]
-	user, err := s.dbQueries.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get user")
-	}
 
 	feed, err := s.dbQueries.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID:		uuid.New(),

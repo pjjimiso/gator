@@ -10,7 +10,7 @@ import (
 	"github.com/pjjimiso/gator/internal/database"
 )
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return errors.New("Follow command expects a single URL argument")
 	}
@@ -19,11 +19,6 @@ func handlerFollow(s *state, cmd command) error {
 	feed, err := s.dbQueries.GetFeed(context.Background(), feedURL)
 	if err != nil { 
 		return errors.Wrap(err, "Failed to get feed")
-	}
-
-	user, err := s.dbQueries.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil { 
-		return errors.Wrap(err, "Failed to get user")
 	}
 
 	followedFeed, err := s.dbQueries.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
