@@ -1,9 +1,8 @@
 package main
 
 import ( 
-	"context"
+	"time"
 	"fmt"
-	"html"
 
 	"github.com/pkg/errors"
 )
@@ -25,25 +24,21 @@ type RSSItem struct {
 }
 
 func handlerAgg(s *state, cmd command) error { 
-	if len(cmd.args) > 0 {
-		return errors.New("Agg command doesn't expect any arguments")
+	if len(cmd.args) != 1 {
+		return errors.New("Agg command expects a single duration string argument (1s, 1m, 1h, etc.)")
 	}
 
-	fetchURL := "https://www.wagslane.dev/index.xml"
-	feed, err := fetchFeed(context.Background(), fetchURL)
-	if err != nil { 
-		return errors.Wrap(err, "Failed to fetch feed")
+	timeBetweenRequests, err := time.ParseDuration(cmd.args[0])
+	fmt.Printf("Collecting feeds every %s\n", timeBetweenRequests)
+	if err != nil {
+		return errors.Wrap(err, "Invalid time duration string")
 	}
 
-	feed.Channel.Title = fmt.Sprintf(html.UnescapeString(feed.Channel.Title))
-	feed.Channel.Description = fmt.Sprintf(html.UnescapeString(feed.Channel.Description))
-	for i, item := range feed.Channel.Item {
-		item.Title = fmt.Sprintf(html.UnescapeString(item.Title))
-		item.Description = fmt.Sprintf(html.UnescapeString(item.Description))
-		feed.Channel.Item[i] = item
-	}
+	ticker := time.NewTicker(timeBetweenRequests)
+	for ; ; <-ticker.C {
+		scrapeFeeds(s)
 
-	printFeed(feed)
+	}
 
 	return nil
 }

@@ -52,3 +52,25 @@ func printFeed(feed *RSSFeed) {
 	}
 }
 
+func scrapeFeeds(s *state) error {
+	feed, err := s.dbQueries.GetNextFeedToFetch(context.Background())
+	if err != nil { 
+		return errors.Wrap(err, "Failed to fetch feed")
+	}
+
+	fmt.Println("Scraping feed:", feed.Url)
+
+	err = s.dbQueries.MarkFeedFetched(context.Background(), feed.ID)
+	if err != nil {
+		return errors.Wrap(err, "Failed to mark the feed as fetched")
+	}
+
+	rssFeed, err := fetchFeed(context.Background(), feed.Url)
+	if err != nil { 
+		return errors.Wrap(err, "Failed to fetch rss feed")
+	}
+
+	printFeed(rssFeed)
+
+	return nil
+}
