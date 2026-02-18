@@ -116,3 +116,9 @@ Lists all of the feeds that you currently follow
 go run . following
 ```
 
+### unfollow
+Unfollows a feed given the provided URL
+```
+go run . unfollow "https://hnrss.org/newest"
+```
+
