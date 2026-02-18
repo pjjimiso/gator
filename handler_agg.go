@@ -29,7 +29,7 @@ func handlerAgg(s *state, cmd command) error {
 	}
 
 	timeBetweenRequests, err := time.ParseDuration(cmd.args[0])
-	fmt.Printf("Collecting feeds every %s\n", timeBetweenRequests)
+	fmt.Printf("Collecting feeds every %s\n\n", timeBetweenRequests)
 	if err != nil {
 		return errors.Wrap(err, "Invalid time duration string")
 	}
@@ -39,6 +39,4 @@ func handlerAgg(s *state, cmd command) error {
 		scrapeFeeds(s)
 
 	}
-
-	return nil
 }

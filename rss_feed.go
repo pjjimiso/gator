@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"html"
 	"context"
 	"net/http"
 	"encoding/xml"
@@ -18,59 +20,68 @@ func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
 
 	req, err := http.NewRequestWithContext(ctx, "GET", feedURL, nil)
 	if err != nil {
-		return &RSSFeed{}, errors.Wrap(err, "Failed to create HTTP request")
+		return nil, errors.Wrap(err, "Failed to create HTTP request")
 	}
+
 	req.Header.Set("User-Agent", "gator")
-	
 	res, err := client.Do(req)
 	if err != nil { 
-		return &RSSFeed{}, errors.Wrap(err, "Failed to get HTTP response")
+		return nil, errors.Wrap(err, "Failed to get HTTP response")
 	}
+	defer res.Body.Close()
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil { 
-		return &RSSFeed{}, errors.Wrap(err, "Failed to read HTTP response body")
+		return nil, errors.Wrap(err, "Failed to read HTTP response body")
 	}
 
-	var feed *RSSFeed
+	var feed RSSFeed
 	err = xml.Unmarshal(data, &feed)
 	if err != nil { 
-		return &RSSFeed{}, errors.Wrap(err, "Failed to unmarshal XML data")
+		return nil, errors.Wrap(err, "Failed to unmarshal XML data")
 	}
 
-	return feed, nil
+	feed.Channel.Title = html.UnescapeString(feed.Channel.Title)
+	feed.Channel.Description = html.UnescapeString(feed.Channel.Description)
+	for i, item := range feed.Channel.Item {
+		item.Title = html.UnescapeString(item.Title)
+		item.Description = html.UnescapeString(item.Description)
+		feed.Channel.Item[i] = item
+	}
+
+	return &feed, nil
 }
 
 func printFeed(feed *RSSFeed) {
 	fmt.Printf("Title: %s\n", feed.Channel.Title)
 	fmt.Printf("Description: %s\n", feed.Channel.Description)
 	for _, item := range feed.Channel.Item { 
-		fmt.Printf("\tTitle: %s\n", item.Title)
-		fmt.Printf("\tLink: %s\n", item.Link)
-		fmt.Printf("\tDescription: %s\n", item.Description)
-		fmt.Printf("\tPubDate: %s\n\n", item.PubDate)
+		if item.Title != "" {
+			fmt.Printf("\tFound post: %s\n", item.Title)
+		}
 	}
 }
 
 func scrapeFeeds(s *state) error {
-	feed, err := s.dbQueries.GetNextFeedToFetch(context.Background())
+	feedData, err := s.dbQueries.GetNextFeedToFetch(context.Background())
 	if err != nil { 
-		return errors.Wrap(err, "Failed to fetch feed")
+		return errors.Wrapf(err, "Failed to fetch feed: %s", feedData.Url)
 	}
 
-	fmt.Println("Scraping feed:", feed.Url)
+	log.Println("Scraping feed:", feedData.Url)
 
-	err = s.dbQueries.MarkFeedFetched(context.Background(), feed.ID)
+	err = s.dbQueries.MarkFeedFetched(context.Background(), feedData.ID)
 	if err != nil {
-		return errors.Wrap(err, "Failed to mark the feed as fetched")
+		return errors.Wrapf(err, "Failed to mark the feed as fetched: %s", feedData.Url)
 	}
 
-	rssFeed, err := fetchFeed(context.Background(), feed.Url)
+	feed, err := fetchFeed(context.Background(), feedData.Url)
 	if err != nil { 
-		return errors.Wrap(err, "Failed to fetch rss feed")
+		return errors.Wrapf(err, "Failed to fetch rss feed for url: %s", feedData.Url)
 	}
 
-	printFeed(rssFeed)
-
+	printFeed(feed)
+	log.Printf("Feed %s collected, %v posts found\n\n", feedData.Name, len(feed.Channel.Item))
+	
 	return nil
 }
