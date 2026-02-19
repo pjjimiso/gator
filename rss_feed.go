@@ -9,8 +9,12 @@ import (
 	"encoding/xml"
 	"time"
 	"io"
+	"database/sql"
 
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
+	"github.com/google/uuid"
+	"github.com/pjjimiso/gator/internal/database"
 )
 
 func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
@@ -70,6 +74,7 @@ func scrapeFeeds(s *state) error {
 
 	log.Println("Scraping feed:", feedData.Url)
 
+
 	err = s.dbQueries.MarkFeedFetched(context.Background(), feedData.ID)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to mark the feed as fetched: %s", feedData.Url)
@@ -80,8 +85,39 @@ func scrapeFeeds(s *state) error {
 		return errors.Wrapf(err, "Failed to fetch rss feed for url: %s", feedData.Url)
 	}
 
-	printFeed(feed)
+	//printFeed(feed)
+	createPosts(s, feed, feedData)
+
 	log.Printf("Feed %s collected, %v posts found\n\n", feedData.Name, len(feed.Channel.Item))
 	
 	return nil
+}
+
+func createPosts(s *state, feed *RSSFeed, feedData database.Feed) { 
+	ctx := context.Background()
+	for _, item := range feed.Channel.Item { 
+		if item.Title == "" {
+			continue
+		}
+
+		pubDate, err := time.Parse(time.RFC1123Z, item.PubDate)
+		_, err = s.dbQueries.CreatePost(ctx, database.CreatePostParams{
+			ID:		uuid.New(),
+			CreatedAt:	time.Now(),
+			UpdatedAt:	time.Now(),
+			Title:		item.Title,
+			Url:		item.Link,
+			Description:	sql.NullString{String: item.Description, Valid: item.Description != ""},
+			PublishedAt:	sql.NullTime{Time: pubDate, Valid: err == nil},
+			FeedID:		feedData.ID,
+		})	
+		if err != nil { 
+			// Ignore duplicate url errors 
+			var pqErr *pq.Error
+			if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+				continue
+			}
+			log.Printf("Error encountered while creating post: $s", err)
+		}
+	}
 }
