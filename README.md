@@ -78,28 +78,31 @@ gator=# \dt
 These are the supported commands: 
 
 ### register
-Registers the user by adding them to the users table and setting their username in `~/.gatorconfig.json`.
+Registers the `user` by adding them to the users table and setting their username in `~/.gatorconfig.json`.
 ```
-go run . register newuser
+go run . register <user>
 ```
 
 ### login
-Sets the user in `~/.gatorconfig.json`. The user must already be registered for this command to work.
+Sets the `user` in `~/.gatorconfig.json`. The user must already be registered for this command to work.
 ```
-go run . login newuser
+go run . login <user>
 ```
 
 ### addfeed
-Takes a feed url and name and assigns the feed to the currently logged in user.
+Takes a feed `title` and `url` and name. This command also automatically follows the feed.
 ```
-go run . addfeed "Hacker News RSS" "https://hnrss.org/newest"
+go run . addfeed "<title>" "<url>"
 ```
 
 ### agg
-TODO
+Scrapes all feeds for posts every `time_between_scans` (1s, 1m, 1h, etc.)
+```
+go run . agg <time_between_scans>
+```
 
 ### feeds
-Lists all of the stored feeds
+Lists all of the added feeds
 ```
 go run . feeds
 ```
@@ -107,7 +110,7 @@ go run . feeds
 ### follow
 Accepts a feed name and url and adds it to your followed list
 ```
-go run . follow "Hacker News RSS" "https://hnrss.org/newest"
+go run . follow "<title>" "<url>"
 ```
 
 ### following
@@ -117,8 +120,13 @@ go run . following
 ```
 
 ### unfollow
-Unfollows a feed given the provided URL
+Unfollows a feed using the specified URL
 ```
-go run . unfollow "https://hnrss.org/newest"
+go run . unfollow "<url>"
 ```
 
+### browse
+Lists posts from all feeds that you are following, takes optional `limit` argument to control how many results are returned
+```
+go run . browse [limit]
+```
