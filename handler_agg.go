@@ -36,7 +36,9 @@ func handlerAgg(s *state, cmd command) error {
 
 	ticker := time.NewTicker(timeBetweenRequests)
 	for ; ; <-ticker.C {
-		scrapeFeeds(s)
-
+		err := scrapeFeeds(s)
+		if err != nil { 
+			return errors.Wrap(err, "An error occured while scraping feeds list")
+		}
 	}
 }
