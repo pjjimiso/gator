@@ -4,6 +4,11 @@ RSS blog aggregator written in Go
 
 # Initial Setup
 
+## Clone the repo
+```
+git clone https://github.com/pjjimiso/gator.git
+```
+
 ## Postgresql
 
 ### Install - Ubuntu/Debian/WSL
@@ -24,52 +29,40 @@ CREATE DATABASE gator;
 \c gator
 ```
 
-## Goose
-
-### Install 
-```
-go install github.com/pressly/goose/v3/cmd/goose@latest
-```
-
-### Create an up migration in sql/schema
-```
-mkdir -p sql/schema
-touch sql/schema/001_users.sql
-```
-Add the following to 001_users.sql:
-```
--- +goose Up
-CREATE TABLE users(
-        id UUID PRIMARY KEY,
-        created_at TIMESTAMP NOT NULL,
-        updated_at TIMESTAMP NOT NULL,
-        name TEXT UNIQUE NOT NULL
-);
-
--- +goose Down
-DROP TABLE users;
-```
-
 ### Test psql connection string
 Replace the user:password with your own
 ```
 psql "postgres://postgres:postgres@localhost:5432/gator"
 ```
 
-### Run up-migration to create the users table
-Replace the connection string with your own
+## Gatorconfig
+
+### Create a `.gatorconfig.json` in your home directory
 ```
-goose postgres "postgres://postgres:postgres@localhost:5432/gator" up
+touch ~/.gatorconfig.json
 ```
-Verify the table was created by running \dt from your psql shell
+
+### Add a `"db_url": "<db_connection_string>"` to your config file
+Example:
 ```
-gator=# \dt
-              List of relations
- Schema |       Name       | Type  |  Owner
---------+------------------+-------+----------
- public | goose_db_version | table | postgres
- public | users            | table | postgres
-(2 rows)
+{
+  "db_url": "postgres://postgres:postgres@localhost:5432/gator?sslmode=disable"
+}
+```
+
+## Goose
+
+### Install 
+Install the goose module
+```
+go install github.com/pressly/goose/v3/cmd/goose@latest
+```
+
+### Run goose up migrations to create the tables
+Replace `<db_url>` with the url from your `.gatorconfig.json`. This command must be run from within the `schema` dir
+```
+cd sql/schema
+goose postgres "<db_url>" up
 ```
 
 # App Usage
@@ -78,55 +71,65 @@ gator=# \dt
 These are the supported commands: 
 
 ### register
-Registers the `user` by adding them to the users table and setting their username in `~/.gatorconfig.json`.
+Registers the `user`. This creates a new user in the database and adds them to `~/.gatorconfig.json`.
+usage: `gator register <user>`
 ```
-go run . register <user>
+gator register this_is_patrick
 ```
 
 ### login
-Sets the `user` in `~/.gatorconfig.json`. The user must already be registered for this command to work.
+Update the `user` in `~/.gatorconfig.json`. The user must already be registered for this command to work. Note that the `register` command runs login, so you only need to run this when switching between different users.
+usage: `gator login <user>`
 ```
-go run . login <user>
+gator login this_is_patrick
 ```
 
 ### addfeed
-Takes a feed `title` and `url` and name. This command also automatically follows the feed.
+Adds a new feed to the database using the `feed_name` and `feed_url`. This command also automatically follows the feed for user currently logged in.
+usage: `gator addfeed <feed_name> <feed_url>`
 ```
-go run . addfeed "<title>" "<url>"
+gator addfeed "Hacker News RSS" "https://hnrss.org/newest"
 ```
 
 ### agg
 Scrapes all feeds for posts every `time_between_scans` (1s, 1m, 1h, etc.)
+usage: `gator agg <time_between_scans>`
 ```
-go run . agg <time_between_scans>
+gator agg 5m
 ```
 
 ### feeds
 Lists all of the added feeds
+usage: `gator feeds`
 ```
-go run . feeds
+gator feeds
 ```
 
 ### follow
-Accepts a feed name and url and adds it to your followed list
+Accepts a `feed_name` and `feed_url` and adds it to the current user's followed feeds
+usage: `gator follow "<feed_name>" "<feed_url>"`
 ```
-go run . follow "<title>" "<url>"
+gator follow "Hacker News RSS" "https://hnrss.org/newest"
 ```
 
 ### following
 Lists all of the feeds that you currently follow
+usage: `gator following`
 ```
-go run . following
+gator following
 ```
 
 ### unfollow
+usage: `gator unfollow "<feed_url>"`
 Unfollows a feed using the specified URL
 ```
-go run . unfollow "<url>"
+gator unfollow "https://hnrss.org/newest"
 ```
 
 ### browse
-Lists posts from all feeds that you are following, takes optional `limit` argument to control how many results are returned
+Lists posts from all feeds that you are following, *optional* `limit` argument controls how many results are returned
+usage: `gator browse [limit]`
 ```
-go run . browse [limit]
+gator browse 10
 ```
+
