@@ -9,7 +9,7 @@ import (
 
 func handlerLogin(s *state, cmd command) error { 
 	if len(cmd.args) != 1 {
-		return errors.New("Expecting a single user argument")
+		return errors.New("usage: login <user>")
 	}
 	if cmd.args[0] == "" { 
 		return errors.New("Username is invalid")

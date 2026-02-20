@@ -25,7 +25,7 @@ type RSSItem struct {
 
 func handlerAgg(s *state, cmd command) error { 
 	if len(cmd.args) != 1 {
-		return errors.New("Agg command expects a single duration string argument (1s, 1m, 1h, etc.)")
+		return errors.New("usage: agg <time_between_requests>\ntime duration format is 1s, 1m, 1h, etc.")
 	}
 
 	timeBetweenRequests, err := time.ParseDuration(cmd.args[0])

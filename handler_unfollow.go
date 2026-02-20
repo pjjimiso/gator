@@ -9,7 +9,7 @@ import (
 
 func handlerUnfollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
-		return errors.New("Unfollow commands expects a single feed URL argument")
+		return errors.New("usage: unfollow <feed_url>")
 	}
 
 	feedUrl := cmd.args[0]

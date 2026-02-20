@@ -9,7 +9,7 @@ import (
 
 func handlerUsers(s *state, cmd command) error {
 	if len(cmd.args) > 0 {
-		errors.New("Users command doesn't expect any arguments")
+		errors.New("usage: users\nNo arguments expected")
 	}
 
 	users, err := s.dbQueries.ListUsers(context.Background())

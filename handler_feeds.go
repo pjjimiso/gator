@@ -9,7 +9,7 @@ import (
 
 func handlerFeeds(s *state, cmd command) error {
 	if len(cmd.args) > 0 {
-		return errors.New("Feeds command doesn't expect an arguments")
+		return errors.New("usage: feeds\nNo arguments expected")
 	}
 
 	feeds, err := s.dbQueries.GetFeeds(context.Background())

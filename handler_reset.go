@@ -9,7 +9,7 @@ import (
 
 func handlerReset(s *state, cmd command) error {
 	if len(cmd.args) > 0 {
-		return errors.New("Reset command doesn't expect any arguments")
+		return errors.New("usage: reset\nNo arguments expected")
 	}
 
 	err := s.dbQueries.TruncateUsers(context.Background())

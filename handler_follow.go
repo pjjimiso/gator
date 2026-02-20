@@ -12,7 +12,7 @@ import (
 
 func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
-		return errors.New("Follow command expects a single URL argument")
+		return errors.New("usage: follow <feed_url>")
 	}
 
 	feedURL := cmd.args[0]

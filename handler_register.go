@@ -12,7 +12,7 @@ import (
 
 func handlerRegister(s *state, cmd command) error { 
 	if len(cmd.args) != 1 {
-		return errors.New("Expecting a single user argument")
+		return errors.New("usage: register <user>")
 
 	}
 	if cmd.args[0] == "" {

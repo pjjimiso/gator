@@ -9,6 +9,9 @@ import (
 )
 
 func handlerFollowing(s *state, cmd command, user database.User) error {
+	if len(cmd.args) > 0 {
+		return errors.New("usage: following\nNo arguments expected")
+	}
 	feeds, err := s.dbQueries.GetFollowedFeeds(context.Background(), user.Name)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get followed feeds")
