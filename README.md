@@ -42,7 +42,7 @@ psql "postgres://postgres:postgres@localhost:5432/gator"
 touch ~/.gatorconfig.json
 ```
 
-### Add a `"db_url": "<db_connection_string>"` to your config file
+Add a `"db_url": "<db_connection_string>"` to your config file
 Example:
 ```
 {
