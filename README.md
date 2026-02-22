@@ -1,5 +1,5 @@
 # gator
-RSS blog aggregator written in Go
+RSS feed aggregator written in Go. Uses Postgresql for feed storage and a simple json config file for managing user and database info. 
 
 
 # Initial Setup
